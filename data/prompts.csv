@@ -1,0 +1,6 @@
+prompt_id,user_id,title,content,likes,views,shares,bookmarks,category,ai_model_key,tags,comments,created_at,updated_at
+prompt_001,user_001,테스트 프롬프트,이것은 테스트입니다,2,13,2,2,,,,1,,
+prompt_002,user_002,ChatGPT 프롬프트,당신은 도우미입니다,1,15,1,2,,,,3,,
+af1cde4af12c8c06ed8b7061,7530025502297617a38fb166,프롬프트,124,1,32,0,1,1234,1234,1234,4,1755134334,1755134334
+417562d2c28bfc1573458b27,7530025502297617a38fb166,asdf,asdf,1,41,0,1,asdf,asdf,asdf,14,1755134505,1755134505
+24f214de09423be42aa8e5f0,c20b530e01db5d42362cbe7d,1234123,124324,1,8,0,1,디자인,gemini,sdafqwer,2,1755148905,1755148905
