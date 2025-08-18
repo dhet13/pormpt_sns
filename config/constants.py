@@ -1,16 +1,18 @@
-# Promptub global constants
+# Promptub global constants - DEPRECATED
+# 새로운 코드는 config.app_config를 사용하세요
 
-# 포인트/조회 라이트 버전 설정
-FREE_VIEWS_PER_DAY = 3  # 일일 무료 조회 수
-VIEW_COST = 2           # 유료 조회 1회당 차감 포인트
+from config.app_config import config
 
-# UI 관련 상수
+# 하위 호환성을 위한 레거시 상수들
+FREE_VIEWS_PER_DAY = config.business.FREE_VIEWS_PER_DAY
+VIEW_COST = config.business.POINT_COST_PER_VIEW
+
 UI_CONSTANTS = {
-    "CARD_WIDTH": 300,  # 반응형이니까 300px로 여유롭게
-    "MAX_CONTENT_WIDTH": 1400,
-    "SIDEBAR_WIDTH": 200,
-    "GRID_SPACING": 12,
-    "ANIMATION_DURATION": 200,
+    "CARD_WIDTH": config.ui.CARD_WIDTH,
+    "MAX_CONTENT_WIDTH": config.ui.MAX_CONTENT_WIDTH,
+    "SIDEBAR_WIDTH": config.ui.SIDEBAR_WIDTH,
+    "GRID_SPACING": config.ui.GRID_SPACING,
+    "ANIMATION_DURATION": config.ui.ANIMATION_DURATION,
 }
 
 # 드롭다운 옵션들
