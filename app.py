@@ -184,5 +184,7 @@ def main(page: ft.Page):
 
 
 if __name__ == "__main__":
-    # 웹 배포용 설정
-    ft.app(target=main, view=ft.AppView.WEB_BROWSER, port=8000)
+    import os
+    # 서버 배포용 설정 (Heroku, Railway 등)
+    port = int(os.environ.get("PORT", 8000))
+    ft.app(target=main, view=ft.AppView.WEB_BROWSER, port=port, host="0.0.0.0")
