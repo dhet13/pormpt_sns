@@ -184,4 +184,5 @@ def main(page: ft.Page):
 
 
 if __name__ == "__main__":
-    ft.app(target=main, port=8000)
+    # 웹 배포용 설정
+    ft.app(target=main, view=ft.AppView.WEB_BROWSER, port=8000)
