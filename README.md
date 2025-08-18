@@ -1,5 +1,7 @@
 ## Promptub (PromShare)
 
+🚀 **[Live Demo - pormptsns-production.up.railway.app](https://pormptsns-production.up.railway.app)**
+
 AI 프롬프트 공유 중심 SNS로 시작해 마켓플레이스로 확장하는 서비스입니다. 한국어 사용자에게 최적화하면서 글로벌 확장 가능성을 고려합니다.
 
 ## 🚀 프로젝트 실행 방법
