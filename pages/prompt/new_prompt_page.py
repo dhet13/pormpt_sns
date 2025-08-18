@@ -5,6 +5,7 @@ from flet import Colors
 
 from components.header import create_header
 from services.prompt_service import save_new_prompt
+from services.auth_service import get_current_user
 from components.toast import show_toast
 
 from config.constants import PLATFORM_OPTIONS, CATEGORY_OPTIONS
@@ -48,6 +49,12 @@ def build_prompt_new_view(page: ft.Page) -> ft.View:
     tags_field = ft.TextField(label="태그(쉼표 구분)", width=480)
 
     def save_prompt(e):
+        # 현재 사용자 확인
+        current_user = get_current_user(page)
+        if not current_user:
+            show_toast(page, "로그인이 필요합니다.", 2000)
+            return
+            
         # 입력 값 검증
         title = (title_field.value or "").strip()
         content = (content_field.value or "").strip()
@@ -75,7 +82,14 @@ def build_prompt_new_view(page: ft.Page) -> ft.View:
             "updated_at": str(int(time.time())),
         }
         save_new_prompt(row)
-        show_toast(page, "프롬프트가 등록되었습니다.", 1000)
+        
+        # 프롬프트 작성 포인트 지급 (토스트 없이)
+        from services.points_service import add_points
+        if current_user:
+            add_points(current_user.get("user_id"), 50, "프롬프트 작성")
+        
+        # 작성 완료 토스트 (포인트 정보 포함)
+        show_toast(page, "프롬프트가 작성되었습니다. 포인트 +50개 획득!", 2000)
         # 홈으로 이동 후 목록을 강제 갱신
         try:
             page.go("/")

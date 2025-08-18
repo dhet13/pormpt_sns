@@ -8,6 +8,28 @@ from .user_service import update_user_points
 from config.constants import FREE_VIEWS_PER_DAY, VIEW_COST
 
 
+def add_points(user_id: str, points: int, reason: str = "", show_toast_func=None) -> bool:
+    """포인트 추가 및 토스트 표시"""
+    try:
+        success = update_user_points(user_id, points)
+        if success and show_toast_func:
+            show_toast_func(f"💰 포인트 +{points}개 획득! ({reason})", 1500)
+        return success
+    except Exception as e:
+        print(f"[ERROR] 포인트 추가 실패: {e}")
+        return False
+
+
+def add_points_with_toast(user_id: str, points: int, reason: str, page) -> bool:
+    """포인트 추가 및 자동 토스트 표시"""
+    try:
+        from components.toast import show_toast
+        return add_points(user_id, points, reason, lambda msg, duration: show_toast(page, msg, duration))
+    except Exception as e:
+        print(f"[ERROR] 포인트 토스트 실패: {e}")
+        return add_points(user_id, points, reason)
+
+
 INTERACTIONS_CSV_PATH = Path("data/interactions.csv")
 
 # 라이트 버전 설정은 config/constants.py에서 관리

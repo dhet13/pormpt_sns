@@ -13,6 +13,145 @@ def _get_current_user(page: ft.Page):
     return None
 
 
+def test_toast(page: ft.Page):
+    """토스트 테스트 함수"""
+    show_toast(page, "토스트 테스트 메시지!", 3000)
+
+
+def _create_search_area(page: ft.Page, page_width: int) -> ft.Container:
+    """검색 영역 생성"""
+    search_field = ft.TextField(
+        hint_text="🔍 프롬프트 검색...",
+        border=ft.InputBorder.OUTLINE,
+        dense=True,
+        width=min(300, page_width * 0.3),
+        on_submit=lambda e: _perform_search(page, e.control.value)
+    )
+    
+    # 검색 필드를 페이지 세션에 저장 (나중에 초기화용)
+    page.session.set("search_field", search_field)
+    
+    search_button = ft.ElevatedButton(
+        "검색",
+        bgcolor=Colors.BLUE_400,
+        color=Colors.WHITE,
+        on_click=lambda e: _perform_search(page, search_field.value)
+    )
+    
+    return ft.Container(
+        content=ft.Row([search_field, search_button], tight=True),
+        expand=True
+    )
+
+
+def _clear_search_results(page: ft.Page):
+    """검색 결과 초기화"""
+    try:
+        if page.session.get("search_results") is not None:
+            page.session.remove("search_results")
+        if page.session.get("search_query") is not None:
+            page.session.remove("search_query")
+        if page.session.get("filter_category") is not None:
+            page.session.remove("filter_category")
+        if page.session.get("filter_ai_model") is not None:
+            page.session.remove("filter_ai_model")
+        
+        # 검색 필드도 초기화
+        search_field = page.session.get("search_field")
+        if search_field:
+            search_field.value = ""
+            search_field.update()
+        
+        if page.route == "/":
+            # 현재 메인 페이지에 있으면 뷰를 다시 빌드
+            from app import build_home_view
+            page.views[-1] = build_home_view(page)
+            page.update()
+        else:
+            page.go("/")
+    except Exception as e:
+        print(f"[ERROR] 검색 결과 초기화 오류: {e}")
+
+
+def _go_home_and_clear_filters(page: ft.Page):
+    """홈으로 이동하고 모든 필터/검색 상태 초기화"""
+    try:
+        print("[DEBUG] 로고 클릭 - 홈으로 이동 및 필터 초기화")
+        
+        # 모든 검색/필터 상태 초기화
+        if page.session.get("search_results") is not None:
+            page.session.remove("search_results")
+        if page.session.get("search_query") is not None:
+            page.session.remove("search_query")
+        if page.session.get("filter_category") is not None:
+            page.session.remove("filter_category")
+        if page.session.get("filter_ai_model") is not None:
+            page.session.remove("filter_ai_model")
+        
+        # 검색 필드도 초기화
+        search_field = page.session.get("search_field")
+        if search_field:
+            search_field.value = ""
+            search_field.update()
+        
+        # 홈으로 강제 이동 및 새로고침
+        if page.route == "/":
+            # 현재 메인 페이지에 있으면 뷰를 다시 빌드
+            from app import build_home_view
+            page.views[-1] = build_home_view(page)
+            page.update()
+        else:
+            page.go("/")
+        
+        show_toast(page, "홈으로 돌아갑니다.", 1000)
+        
+    except Exception as e:
+        print(f"[ERROR] 홈 이동 오류: {e}")
+        page.go("/")
+
+
+def _perform_search(page: ft.Page, query: str):
+    """검색 수행"""
+    query = (query or "").strip()
+    
+    # 검색어가 없으면 전체 보기
+    if not query:
+        _clear_search_results(page)
+        show_toast(page, "전체 프롬프트를 표시합니다.", 1000)
+        return
+    
+    if len(query) < 2:
+        show_toast(page, "검색어는 2자 이상 입력해주세요.", 1000)
+        return
+    
+    try:
+        # 검색 결과를 세션에 저장
+        from services.search_service import search_prompts
+        results = search_prompts(query)
+        
+        if not results:
+            show_toast(page, f"'{query}' 검색 결과가 없습니다.", 1000)
+            return
+        
+        # 검색 결과를 세션에 저장하고 메인 페이지로 이동
+        page.session.set("search_query", query)
+        page.session.set("search_results", results)
+        
+        show_toast(page, f"'{query}' 검색 결과 {len(results)}개 발견!", 1000)
+        
+        # 메인 페이지로 이동하고 강제로 새로고침
+        if page.route != "/":
+            page.go("/")
+        else:
+            # 현재 메인 페이지에 있으면 뷰를 다시 빌드
+            from app import build_home_view
+            page.views[-1] = build_home_view(page)
+            page.update()
+            
+    except Exception as e:
+        print(f"[ERROR] 검색 오류: {e}")
+        show_toast(page, "검색 중 오류가 발생했습니다.", 1000)
+
 def build_user_menu(page: ft.Page) -> ft.Row:
     current_user = _get_current_user(page)
     from services.user_service import get_user_by_id
@@ -118,26 +257,11 @@ def create_header(page: ft.Page) -> ft.Container:
                 ft.Text("🚀", size=28),
                 ft.Text("Promptub", size=24, weight=ft.FontWeight.BOLD, color=Colors.BLUE_700)
             ], tight=True),
-            on_click=lambda e: e.page.go("/"),
+            on_click=lambda e: _go_home_and_clear_filters(e.page),
         ),
         
         # 검색 영역 (반응형)
-        ft.Container(
-            content=ft.Row([
-                ft.TextField(
-                    hint_text="🔍 프롬프트 검색...",
-                    border=ft.InputBorder.OUTLINE,
-                    dense=True,
-                    width=min(300, page_width * 0.3)  # 화면 크기에 따라 조정
-                ),
-                ft.ElevatedButton(
-                    "검색",
-                    bgcolor=Colors.BLUE_400,
-                    color=Colors.WHITE
-                )
-            ], tight=True),
-            expand=True
-        ),
+        _create_search_area(page, page_width),
         
         # 사용자 메뉴
         build_user_menu(page)

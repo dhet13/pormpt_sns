@@ -121,6 +121,7 @@ def build_prompt_detail_view(page: ft.Page, prompt_id: str) -> ft.View:
             traceback.print_exc()
 
     def submit_comment(e):
+        current_user = get_current_user(page)
         if not current_user:
             show_toast(page, "로그인이 필요합니다.", 3000)
             return
@@ -146,7 +147,14 @@ def build_prompt_detail_view(page: ft.Page, prompt_id: str) -> ft.View:
             comment_input.value = ""
             comment_input.update()
             print(f"[DEBUG] 댓글 등록 성공: {new_comment.comment_id}")
-            show_toast(page, "댓글이 등록되었습니다.", 2000)
+            
+            # 댓글 작성 포인트 지급 (토스트 없이)
+            from services.points_service import add_points
+            if current_user:
+                add_points(current_user.get("user_id"), 3, "댓글 작성")
+            
+            # 댓글 등록 완료 토스트 (포인트 정보 포함)
+            show_toast(page, "댓글이 작성되었습니다. 포인트 +3개 획득!", 2000)
             
             # 댓글 섹션만 동적 업데이트 (페이지 새로고침 X)
             print(f"[DEBUG] 댓글 섹션 업데이트 시작")

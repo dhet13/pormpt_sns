@@ -91,3 +91,33 @@ def update_prompt_field(prompt_id: str, field: str, value: str) -> bool:
     return updated
 
 
+def delete_prompt_by_id(prompt_id: str) -> bool:
+    """프롬프트 삭제"""
+    if not PROMPTS_CSV_PATH.exists() or not prompt_id:
+        return False
+    
+    try:
+        rows = read_csv_rows(PROMPTS_CSV_PATH)
+        if not rows:
+            return False
+        
+        fieldnames = list(rows[0].keys())
+        original_count = len(rows)
+        
+        # 해당 ID의 프롬프트 제거
+        rows = [r for r in rows 
+                if str(r.get("prompt_id") or r.get("id") or "") != str(prompt_id)]
+        
+        if len(rows) < original_count:
+            write_csv_rows(PROMPTS_CSV_PATH, rows, fieldnames)
+            print(f"[DEBUG] 프롬프트 삭제 완료: {prompt_id}")
+            return True
+        else:
+            print(f"[DEBUG] 삭제할 프롬프트를 찾지 못함: {prompt_id}")
+            return False
+            
+    except Exception as e:
+        print(f"[ERROR] 프롬프트 삭제 실패: {e}")
+        return False
+
+
